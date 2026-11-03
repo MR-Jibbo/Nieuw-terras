@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Zon-groen pergola</title>
+<script src="./support.js"></script>
+<script src="three.min.js"></script>
+<script src="film.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+body{margin:0;background:#eae5d8}
+button{font-family:'DM Sans',system-ui,sans-serif;cursor:pointer}
+button:focus-visible{outline:3px solid #1d2a24;outline-offset:2px}
+.pf-hud button:focus-visible{outline-color:#ffffff}
+.pf-info{position:absolute;right:16px;top:84px;width:380px;max-height:calc(100% - 170px)}
+@media (max-width:640px){.pf-info{left:12px;right:12px;top:72px;width:auto;max-height:50%}}
+@media (max-height:500px){.pf-info{top:64px;max-height:calc(100% - 76px);width:340px;left:auto;right:12px}}
+.pf-info button:focus-visible{outline-color:#1d2a24}
+.pf-intro{box-sizing:border-box;width:100%;max-width:560px;padding:32px 32px 32px 48px;display:flex;flex-direction:column;gap:18px;max-height:100%;overflow:auto}
+.pf-intro h1{margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:56px;line-height:1.02;letter-spacing:-.02em}
+@media (max-width:640px){.pf-intro{padding:20px 20px 20px 20px;gap:14px}.pf-intro h1{font-size:40px}}
+@media (max-height:500px){.pf-intro{padding:12px 20px 12px 24px;gap:8px}.pf-intro h1{font-size:30px}.pf-intro p{font-size:14px!important;line-height:1.4!important}.pf-intro button{min-height:44px!important}}
+</style>
+</helmet>
+<div ref="{{rootRef}}" tabindex="0" style="position:relative;width:100%;height:100vh;min-height:360px;overflow:hidden;background:#eae5d8;font-family:'DM Sans',system-ui,sans-serif;color:#1d2a24;outline:none;user-select:none;-webkit-user-select:none;touch-action:none">
+<canvas ref="{{canvasRef}}" style="position:absolute;left:0;top:0;width:100%;height:100%;display:block"></canvas>
+
+<!-- laden -->
+<sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#f6f1e6">
+<div style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:28px;letter-spacing:-.01em">Zon-groen pergola</div>
+<div style="font-size:15px;color:#4a5750">Het terrein wordt opgebouwd…</div>
+</div>
+</sc-if>
+
+<!-- fout -->
+<sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#f6f1e6;padding:24px;text-align:center">
+<div style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:26px">De 3D-weergave kon niet starten</div>
+<div style="font-size:15px;color:#4a5750;max-width:520px">Je browser of apparaat ondersteunt WebGL mogelijk niet, of de weergave is geblokkeerd. Probeer een recente versie van Chrome, Edge, Firefox of Safari.</div>
+<div style="font-size:12px;color:#6a766f;max-width:640px;max-height:80px;overflow:hidden;white-space:pre-wrap">{{errorText}}</div>
+</div>
+</sc-if>
+
+<!-- startscherm -->
+<sc-if value="{{isIntro}}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:0;display:flex;align-items:center;background:linear-gradient(90deg,rgba(246,241,230,.94) 0%,rgba(246,241,230,.82) 38%,rgba(246,241,230,0) 74%)">
+<div class="pf-intro">
+<div style="font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#2f6b3f">Concept · rondleiding</div>
+<h1>Het nieuwe prachtige terras</h1>
+<p style="margin:0;font-size:18px;line-height:1.5;color:#33413a">Een animatiefilm en verkenmodus over het concept voor het terras boven de fietsenstalling (14 × 90 meter): een modulaire zon-groene pergola met groenmodules, zelfwatergevende plantenbakken en habitatbakken.</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:6px">
+<button onClick="{{onStart}}" style="min-height:52px;padding:0 28px;border:0;border-radius:999px;background:#e0a526;color:#1d2a24;font-size:17px;font-weight:700;display:inline-flex;align-items:center;gap:10px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="#1d2a24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+Start de rondleiding
+</button>
+<button onClick="{{onExploreFromStart}}" style="min-height:52px;padding:0 22px;border:2px solid #1d2a24;border-radius:999px;background:transparent;color:#1d2a24;font-size:16px;font-weight:700">Zelf het terrein verkennen</button>
+</div>
+<div style="font-size:14px;line-height:1.5;color:#4a5750">Ongeveer {{totalMin}} minuten · Nederlands, met ondertiteling · zet je geluid aan</div>
+<div style="font-size:12px;line-height:1.5;color:#6a766f">Muziek: &ldquo;Time&rdquo; &mdash; Toshiki Soejima &amp; Nahokimama</div>
+<div style="font-size:12px;line-height:1.5;color:#6a766f">Stem: voorlopige synthetische voice-over (Piper, nl_NL-ronnie), nog te vervangen door een menselijke opname.</div>
+</div>
+</div>
+</sc-if>
+
+<!-- film-HUD -->
+<sc-if value="{{isFilm}}" hint-placeholder-val="{{ false }}">
+<div class="pf-hud" style="position:absolute;inset:0;pointer-events:none">
+<div style="position:absolute;left:16px;top:14px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+<div style="background:rgba(18,28,23,.74);color:#ffffff;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:500;display:inline-flex;gap:10px;align-items:center">
+<span style="font-weight:700;color:#f2c14e">{{chapterNum}}</span><span>{{chapterName}}</span>
+</div>
+<sc-if value="{{voiceTimed}}" hint-placeholder-val="{{ false }}">
+<div style="background:rgba(246,241,230,.92);color:#33413a;border-radius:12px;padding:8px 12px;font-size:13px;max-width:320px;line-height:1.35">Voorlopige timing: de ingesproken voice-over is nog niet toegevoegd. De ondertitels lopen mee met het beeld.</div>
+</sc-if>
+</div>
+
+<sc-if value="{{isPaused}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(18,28,23,.78);color:#ffffff;border-radius:999px;padding:14px 26px;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:22px;display:inline-flex;gap:12px;align-items:center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true"><rect x="6" y="4" width="4.5" height="16" rx="1"/><rect x="13.5" y="4" width="4.5" height="16" rx="1"/></svg>
+Gepauzeerd
+</div>
+</sc-if>
+
+<div style="position:absolute;left:0;right:0;bottom:0;padding:0 16px 14px;display:flex;flex-direction:column;align-items:center;gap:10px">
+<sc-if value="{{hasSubtitle}}" hint-placeholder-val="{{ true }}">
+<div style="max-width:880px;background:rgba(18,28,23,.82);color:#ffffff;border-radius:14px;padding:12px 20px;font-size:{{subSize}};line-height:1.45;text-align:center;font-weight:500">{{subtitle}}</div>
+</sc-if>
+<div style="width:100%;max-width:1100px;display:flex;align-items:center;gap:8px;background:rgba(18,28,23,.74);border-radius:999px;padding:6px 10px;pointer-events:auto">
+<button onClick="{{onTogglePause}}" aria-label="{{pauseLabel}}" style="width:44px;height:44px;flex:none;border:0;border-radius:50%;background:#e0a526;display:inline-flex;align-items:center;justify-content:center">
+<sc-if value="{{isPaused}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="#1d2a24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg></sc-if>
+<sc-if value="{{notPaused}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="#1d2a24" aria-hidden="true"><rect x="6" y="4" width="4.5" height="16" rx="1"/><rect x="13.5" y="4" width="4.5" height="16" rx="1"/></svg></sc-if>
+</button>
+<button onClick="{{onRestart}}" aria-label="Opnieuw beginnen" style="width:44px;height:44px;flex:none;border:0;border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+</button>
+<span style="color:#ffffff;font-size:13px;font-variant-numeric:tabular-nums;min-width:38px;text-align:right">{{timeNow}}</span>
+<button onClick="{{onSeek}}" aria-label="Spoel door de film" style="flex:1;min-width:60px;height:44px;border:0;background:transparent;padding:0;display:flex;align-items:center">
+<span style="display:block;width:100%;height:8px;border-radius:99px;background:rgba(255,255,255,.28);overflow:hidden;pointer-events:none"><span style="display:block;height:100%;width:{{pct}};background:#e0a526;border-radius:99px"></span></span>
+</button>
+<span style="color:#ffffff;font-size:13px;font-variant-numeric:tabular-nums;min-width:38px">{{timeTotal}}</span>
+<button onClick="{{onToggleCC}}" aria-label="Ondertiteling aan of uit" aria-pressed="{{ccOn}}" style="min-width:44px;height:44px;flex:none;border:0;border-radius:12px;background:{{ccBg}};color:#ffffff;font-size:13px;font-weight:700;padding:0 8px">OT</button>
+<button onClick="{{onToggleMute}}" aria-label="{{muteLabel}}" style="width:44px;height:44px;flex:none;border:0;border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center">
+<sc-if value="{{isMuted}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6M21 9l-5 6"/></svg></sc-if>
+<sc-if value="{{notMuted}}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></sc-if>
+</button>
+<button onClick="{{onFullscreen}}" aria-label="Volledig scherm" style="width:44px;height:44px;flex:none;border:0;border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- eindscherm -->
+<sc-if value="{{isEnded}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(18,28,23,.2)">
+<div style="max-width:560px;width:100%;box-sizing:border-box;background:#f6f1e6;border-radius:24px;padding:36px;display:flex;flex-direction:column;gap:16px;box-shadow:0 24px 70px rgba(0,0,0,.28)">
+<div style="font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#2f6b3f">Einde van de rondleiding</div>
+<h2 style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:38px;line-height:1.08;letter-spacing:-.015em">Eén samenhangend ontwerp, nog te toetsen</h2>
+<p style="margin:0;font-size:16px;line-height:1.55;color:#33413a">Dit is een concept: het ontwerp is nog niet getoetst op draagkracht, kosten, beheer en veiligheid. Verken nu zelf het terrein en zoek de gele punten voor uitleg, met bron en status (feit, ontwerpkeuze of nog te toetsen).</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px">
+<button onClick="{{onRestart}}" style="min-height:52px;padding:0 26px;border:0;border-radius:999px;background:#e0a526;color:#1d2a24;font-size:16px;font-weight:700">Opnieuw bekijken</button>
+<button onClick="{{onExplore}}" style="min-height:52px;padding:0 24px;border:2px solid #1d2a24;border-radius:999px;background:transparent;color:#1d2a24;font-size:16px;font-weight:700">Zelf het terrein verkennen</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- verkennen -->
+<sc-if value="{{isExplore}}" hint-placeholder-val="{{ false }}">
+<div class="pf-hud" style="position:absolute;inset:0;pointer-events:none">
+<div style="position:absolute;left:16px;top:14px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+<div style="background:rgba(18,28,23,.74);color:#ffffff;border-radius:14px;padding:10px 16px;display:flex;flex-direction:column;gap:2px;max-width:420px">
+<span style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:18px">Ontdek het terrein zelf.</span>
+<span style="font-size:13px;color:#d7e0da">Loop rond en zoek de gele bolletjes voor uitleg. <b style="color:#f2c14e">{{seenLabel}}</b></span>
+</div>
+<div style="display:flex;gap:8px;align-items:center">
+<button onClick="{{onToggleMute}}" aria-label="{{muteLabel}}" style="pointer-events:auto;width:44px;height:44px;border:0;border-radius:50%;background:rgba(18,28,23,.74);display:inline-flex;align-items:center;justify-content:center">
+<sc-if value="{{isMuted}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6M21 9l-5 6"/></svg></sc-if>
+<sc-if value="{{notMuted}}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></sc-if>
+</button>
+<button onClick="{{onBackToFilm}}" style="pointer-events:auto;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:#e0a526;color:#1d2a24;font-size:14px;font-weight:700">Terug naar film</button>
+</div>
+</div>
+
+<sc-if value="{{isCrosshair}}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 0 0 1.5px rgba(18,28,23,.55)"></div>
+</sc-if>
+
+<sc-if value="{{showKeys}}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:16px;bottom:14px;background:rgba(18,28,23,.74);color:#ffffff;border-radius:14px;padding:10px 16px;font-size:13px;line-height:1.7">
+<div><b>W A S D</b> lopen · <b>Shift</b> rennen · <b>Spatie</b> springen</div>
+<div>{{lookHint}} · <b>E</b> uitleg open/dicht · <b>Esc</b> menu</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isTouch}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;pointer-events:none">
+<div onTouchStart="{{lookStart}}" onTouchMove="{{lookMove}}" onTouchEnd="{{lookEnd}}" onTouchCancel="{{lookCancel}}" style="position:absolute;right:0;top:80px;bottom:0;width:55%;pointer-events:auto;touch-action:none"></div>
+<div onTouchStart="{{stickStart}}" onTouchMove="{{stickMove}}" onTouchEnd="{{stickEnd}}" onTouchCancel="{{stickEnd}}" style="position:absolute;left:0;bottom:0;width:45%;height:55%;pointer-events:auto;touch-action:none"></div>
+<div style="position:absolute;left:28px;bottom:28px;width:112px;height:112px;border-radius:50%;background:rgba(18,28,23,.34);border:2px solid rgba(255,255,255,.7)">
+<div style="position:absolute;left:34px;top:34px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.9);transform:translate({{knobX}}px,{{knobY}}px)"></div>
+</div>
+<button onPointerDown="{{onJump}}" aria-label="Springen" style="pointer-events:auto;position:absolute;right:24px;bottom:28px;width:72px;height:72px;border-radius:50%;border:2px solid rgba(255,255,255,.8);background:rgba(18,28,23,.55);color:#ffffff;font-size:13px;font-weight:700">Spring</button>
+<button onPointerDown="{{onSprint}}" aria-label="Rennen aan of uit" aria-pressed="{{sprintOn}}" style="pointer-events:auto;position:absolute;right:112px;bottom:28px;width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,.8);background:{{sprintBg}};color:#ffffff;font-size:13px;font-weight:700">Ren</button>
+</div>
+</sc-if>
+
+<sc-if value="{{hasHint}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(246,241,230,.94);color:#1d2a24;border-radius:999px;padding:8px 18px;font-size:14px;font-weight:500;white-space:nowrap">{{hint}}</div>
+</sc-if>
+
+<sc-if value="{{hasPrompt}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;bottom:{{promptBottom}};display:flex;justify-content:center;padding:0 16px;box-sizing:border-box">
+<button onClick="{{onOpenFocus}}" style="pointer-events:auto;min-height:48px;padding:6px 20px 6px 8px;border:0;border-radius:999px;background:#f6f1e6;color:#1d2a24;font-size:15px;font-weight:700;display:inline-flex;align-items:center;gap:12px;box-shadow:0 6px 22px rgba(0,0,0,.25);max-width:100%">
+<span style="flex:none;min-width:34px;height:34px;border-radius:50%;background:#e0a526;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">{{promptKey}}</span>
+<span style="text-align:left">{{promptText}}</span>
+</button>
+</div>
+</sc-if>
+
+<sc-if value="{{hasInfo}}" hint-placeholder-val="{{ false }}">
+<div class="pf-info" role="dialog" aria-label="{{infoTitle}}" style="pointer-events:auto;box-sizing:border-box;background:#f6f1e6;color:#1d2a24;border-radius:18px;padding:14px 16px 14px;box-shadow:0 14px 40px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:10px;overflow:auto">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+<span style="font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#2f6b3f">{{infoCat}}</span>
+<sc-if value="{{hasStatus}}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:700;background:#f3d98a;color:#4a3300;border-radius:999px;padding:2px 9px">{{infoStatus}}</span></sc-if>
+</div>
+<div style="display:flex;align-items:center;gap:6px;flex:none;margin:-8px -8px 0 0"><sc-if value="{{showKeys}}" hint-placeholder-val="{{ true }}"><span style="font-size:12px;color:#56635b">druk <b style="display:inline-block;min-width:18px;text-align:center;border:1px solid #b9b19b;border-radius:5px;padding:0 4px;background:#fff;color:#1d2a24">E</b> om te sluiten</span></sc-if>
+<button onClick="{{onClosePoint}}" aria-label="Sluit uitleg (E)" style="flex:none;width:44px;height:44px;border:0;border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d2a24" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>
+</button></div>
+</div>
+<h3 style="margin:-6px 0 0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:22px;line-height:1.15">{{infoTitle}}</h3>
+<div style="display:flex;align-items:center;gap:8px;background:#ffffff;border-radius:999px;padding:5px 12px 5px 5px;border:1px solid #d8d0bb">
+<sc-if value="{{audShowPlay}}" hint-placeholder-val="{{ true }}"><button onClick="{{onAudioPlay}}" aria-label="Uitleg afspelen" style="flex:none;width:44px;height:44px;border:0;border-radius:50%;background:#e0a526;display:inline-flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1d2a24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg></button></sc-if>
+<sc-if value="{{audShowPause}}" hint-placeholder-val="{{ false }}"><button onClick="{{onAudioPause}}" aria-label="Uitleg pauzeren" style="flex:none;width:44px;height:44px;border:0;border-radius:50%;background:#e0a526;display:inline-flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1d2a24" aria-hidden="true"><rect x="6" y="4" width="4.5" height="16" rx="1"/><rect x="13.5" y="4" width="4.5" height="16" rx="1"/></svg></button></sc-if>
+<button onClick="{{onAudioReplay}}" aria-label="Uitleg opnieuw afspelen" style="flex:none;width:40px;height:40px;border:0;border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d2a24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+<span style="font-size:12.5px;font-weight:700;color:#2c3a33">{{audLabel}}</span>
+<span style="display:block;width:100%;height:5px;border-radius:99px;background:#e1d9c5;overflow:hidden"><span style="display:block;height:100%;width:{{audPct}};background:#2f6b3f;border-radius:99px"></span></span>
+</div>
+</div>
+<sc-if value="{{hasAudNote}}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:12.5px;line-height:1.4;color:#7a3b00">{{audNote}}</p></sc-if>
+<p style="margin:0;font-size:14.5px;line-height:1.5;color:#2c3a33">{{infoText}}</p>
+<sc-if value="{{hasFact}}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:13.5px;line-height:1.45;background:#ece5d3;border-radius:10px;padding:8px 11px;color:#2c3a33">{{infoFact}}</p></sc-if>
+<sc-if value="{{hasNote}}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:12.5px;line-height:1.4;color:#56635b">{{infoNote}}</p></sc-if>
+<div style="font-size:11.5px;line-height:1.45;color:#56635b"><b>Bron:</b> <sc-for list="{{infoSrc}}" as="sr" hint-placeholder-count="2"><span style="display:block">{{sr.t}}</span></sc-for></div>
+</div>
+</sc-if>
+
+<sc-if value="{{showMenu}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(18,28,23,.5);pointer-events:auto">
+<div style="max-width:460px;width:100%;max-height:92vh;overflow:auto;box-sizing:border-box;background:#f6f1e6;border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:28px">Gepauzeerd</h2>
+<button onClick="{{onResumeExplore}}" style="min-height:52px;border:0;border-radius:999px;background:#e0a526;color:#1d2a24;font-size:16px;font-weight:700">Verder verkennen</button>
+<button onClick="{{onBackToFilm}}" style="min-height:52px;border:2px solid #1d2a24;border-radius:999px;background:transparent;color:#1d2a24;font-size:16px;font-weight:700">Terug naar de film</button>
+<div style="margin-top:6px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2f6b3f">Informatiepunten · {{seenLabel}}</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{points}}" as="pt" hint-placeholder-count="4">
+<button onClick="{{pt.open}}" style="min-height:44px;border:1px solid #d8d0bb;border-radius:12px;background:#ffffff;color:#1d2a24;font-size:14.5px;font-weight:500;text-align:left;padding:6px 12px;display:flex;align-items:center;gap:10px">
+<span style="flex:none;width:12px;height:12px;border-radius:50%;background:{{pt.dot}}"></span>
+<span style="flex:1">{{pt.title}}</span>
+<span style="flex:none;font-size:12px;color:#56635b">{{pt.seenLabel}}</span>
+</button>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { s: { phase: 'loading', paused: false, T: 0, chapter: 0, chapterName: '', subtitle: '', muted: false, cc: true, locked: false, menu: false, progress: 0, voice: 'timed', touch: false, error: '', hint: '', total: 640 }, sprint: false, kx: 0, ky: 0, vw: 1280 };
+    this.canvasRef = (el) => { this.canvas = el; };
+    this.rootRef = (el) => { this.root = el; };
+    this.api = null; this.stick = null; this.look = null;
+    const A = (fn) => () => { if (this.api) fn(this.api); };
+    this.onStart = A((a) => a.start());
+    this.onExploreFromStart = A((a) => a.explore());
+    this.onExplore = A((a) => a.explore());
+    this.onRestart = A((a) => a.restart());
+    this.onBackToFilm = A((a) => a.backToFilm());
+    this.onResumeExplore = A((a) => a.resumeExplore());
+    this.onTogglePause = A((a) => a.togglePause());
+    this.onToggleCC = A((a) => a.toggleCaptions());
+    this.onToggleMute = A((a) => a.setMuted(!this.state.s.muted));
+    this.onFullscreen = () => { try { const r = this.root; if (document.fullscreenElement) document.exitFullscreen(); else if (r && r.requestFullscreen) r.requestFullscreen(); } catch (e) {} };
+    this.onSeek = (e) => { if (!this.api) return; try { const r = e.currentTarget.getBoundingClientRect(); const u = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); this.api.seek(u * this.state.s.total); } catch (er) {} };
+    this.onJump = (e) => { try { e.preventDefault(); } catch (er) {} if (this.api) this.api.jump(); };
+    this.onSprint = (e) => { try { e.preventDefault(); } catch (er) {} const v = !this.state.sprint; this.setState({ sprint: v }); if (this.api) this.api.setSprint(v); };
+    // virtuele stick (links) en kijkvlak (rechts)
+    this.stickStart = (e) => { const t = e.changedTouches[0]; this.stick = { id: t.identifier, x: t.clientX, y: t.clientY }; };
+    this.stickMove = (e) => { if (!this.stick || !this.api) return; for (const t of e.changedTouches) { if (t.identifier !== this.stick.id) continue; const R = 48; let dx = t.clientX - this.stick.x, dy = t.clientY - this.stick.y; const m = Math.hypot(dx, dy); if (m > R) { dx = dx / m * R; dy = dy / m * R; } this.api.setMove(dx / R, dy / R); this.setState({ kx: dx * .55, ky: dy * .55 }); } };
+    this.stickEnd = () => { this.stick = null; if (this.api) this.api.setMove(0, 0); this.setState({ kx: 0, ky: 0 }); };
+    this.lookStart = (e) => { const t = e.changedTouches[0]; this.look = { id: t.identifier, x: t.clientX, y: t.clientY, sx: t.clientX, sy: t.clientY, t0: Date.now() }; };
+    this.lookMove = (e) => { if (!this.look || !this.api) return; for (const t of e.changedTouches) { if (t.identifier !== this.look.id) continue; this.api.addLook(t.clientX - this.look.x, t.clientY - this.look.y); this.look.x = t.clientX; this.look.y = t.clientY; } };
+    this.lookEnd = (e) => { const L = this.look; this.look = null; try { const t = e.changedTouches[0]; if (L && this.api && Date.now() - L.t0 < 350 && Math.hypot(t.clientX - L.sx, t.clientY - L.sy) < 12) this.api.tapAt(t.clientX, t.clientY); } catch (er) {} };
+    this.lookCancel = () => { this.look = null; };
+    this.onOpenFocus = A((a) => a.openFocus());
+    this.onClosePoint = A((a) => a.closePoint());
+    this.onAudioPlay = A((a) => a.audioPlay());
+    this.onAudioPause = A((a) => a.audioPause());
+    this.onAudioReplay = A((a) => a.audioReplay());
+    this.onWinResize = () => { if (this.api) this.api.resize(); };
+  }
+  componentDidMount() {
+    if (!window.PF || !window.THREE) { this.setState({ s: Object.assign({}, this.state.s, { phase: 'error', error: 'Scripts niet geladen (THREE/PF ontbreekt).' }) }); return; }
+    try {
+      this.api = window.PF.create({ canvas: this.canvas, root: this.root, voiceUrl: ['audio/vo_aac.mp4','audio/vo_opus.webm'], musicUrl: ['audio/music_aac.mp4','audio/music_opus.webm'], pointAudio: {"terrein": ["pa/terrein.mp4", "pa/terrein.webm"], "pergola": ["pa/pergola.mp4", "pa/pergola.webm"], "module": ["pa/module.mp4", "pa/module.webm"], "zonnedak": ["pa/zonnedak.mp4", "pa/zonnedak.webm"], "klim": ["pa/klim.mp4", "pa/klim.webm"], "bak": ["pa/bak.mp4", "pa/bak.webm"], "reservoir": ["pa/reservoir.mp4", "pa/reservoir.webm"], "capillair": ["pa/capillair.mp4", "pa/capillair.webm"], "vulbuis": ["pa/vulbuis.mp4", "pa/vulbuis.webm"], "habitat": ["pa/habitat.mp4", "pa/habitat.webm"], "bloemen": ["pa/bloemen.mp4", "pa/bloemen.webm"], "kruiden": ["pa/kruiden.mp4", "pa/kruiden.webm"], "sedum": ["pa/sedum.mp4", "pa/sedum.webm"], "droog": ["pa/droog.mp4", "pa/droog.webm"], "vochtig": ["pa/vochtig.mp4", "pa/vochtig.webm"], "combi": ["pa/combi.mp4", "pa/combi.webm"], "onderhoud": ["pa/onderhoud.mp4", "pa/onderhoud.webm"], "draagkracht": ["pa/draagkracht.mp4", "pa/draagkracht.webm"], "sensor": ["pa/sensor.mp4", "pa/sensor.webm"], "rood": ["pa/rood.mp4", "pa/rood.webm"], "lokaal": ["pa/lokaal.mp4", "pa/lokaal.webm"], "pad": ["pa/pad.mp4", "pa/pad.webm"]}, onState: (s) => this.setState({ s }) });
+      this.api.init().catch(() => {});
+    } catch (e) { this.setState({ s: Object.assign({}, this.state.s, { phase: 'error', error: String(e && e.stack || e) }) }); return; }
+    window.addEventListener('resize', this.onWinResize);
+    try { this.ro = new ResizeObserver(() => this.onWinResize()); this.ro.observe(this.root); } catch (e) {}
+    try { this.root.focus(); } catch (e) {}
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this.onWinResize); try { this.ro && this.ro.disconnect(); } catch (e) {} if (this.api) this.api.dispose(); }
+  renderVals() {
+    const s = this.state.s, ph = s.phase, total = s.total || 640;
+    const fmt = (t) => { t = Math.max(0, Math.round(t)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+    const sub = s.subtitle || '';
+    const touch = !!s.touch;
+    const pts = window.PF && window.PF.POINTS ? window.PF.POINTS : [];
+    const inf = s.infoId ? pts.find((p) => p.id === s.infoId) : null, foc = s.focusId ? pts.find((p) => p.id === s.focusId) : null, as = s.audioState || 'idle';
+    return {
+      canvasRef: this.canvasRef, rootRef: this.rootRef,
+      isLoading: ph === 'loading', isError: ph === 'error', isIntro: ph === 'intro', isFilm: ph === 'film', isEnded: ph === 'ended', isExplore: ph === 'explore',
+      errorText: s.error || '',
+      totalMin: String(Math.round(total / 60 * 2) / 2).replace('.', ','),
+      chapterNum: 'Scène ' + ((s.chapter || 0) + 1) + '/9', chapterName: s.chapterName || '',
+      voiceTimed: s.voice === 'timed' && !s.muted && ph === 'film',
+      isPaused: !!s.paused, notPaused: !s.paused, pauseLabel: s.paused ? 'Afspelen' : 'Pauzeren',
+      hasSubtitle: !!sub && !!s.cc, subtitle: sub, subSize: sub.length > 230 ? '17px' : '20px',
+      timeNow: fmt(s.T || 0), timeTotal: fmt(total), pct: Math.round(Math.min(1, Math.max(0, s.progress || 0)) * 1000) / 10 + '%',
+      ccOn: !!s.cc, ccBg: s.cc ? '#2f6b3f' : 'rgba(255,255,255,.16)',
+      isMuted: !!s.muted, notMuted: !s.muted, muteLabel: s.muted ? 'Geluid aanzetten' : 'Geluid uitzetten',
+      showKeys: !touch, isTouch: touch, isCrosshair: !touch && !!s.locked,
+      lookHint: s.locked ? 'Muis kijken' : 'Klik en sleep om rond te kijken',
+      hasHint: !!s.hint && !s.menu, hint: s.hint || '',
+      showMenu: !!s.menu,
+      knobX: Math.round(this.state.kx), knobY: Math.round(this.state.ky),
+      sprintOn: !!this.state.sprint, sprintBg: this.state.sprint ? '#2f6b3f' : 'rgba(18,28,23,.55)',
+      onStart: this.onStart, onExploreFromStart: this.onExploreFromStart, onExplore: this.onExplore, onRestart: this.onRestart, onBackToFilm: this.onBackToFilm, onResumeExplore: this.onResumeExplore,
+      onTogglePause: this.onTogglePause, onToggleCC: this.onToggleCC, onToggleMute: this.onToggleMute, onFullscreen: this.onFullscreen, onSeek: this.onSeek,
+      onJump: this.onJump, onSprint: this.onSprint,
+      seenLabel: (s.seen ? s.seen.length : 0) + ' van ' + (s.nPoints || 0) + ' ontdekt',
+      points: (window.PF && window.PF.POINTS ? window.PF.POINTS : []).map((p) => { const seen = (s.seen || []).indexOf(p.id) >= 0; return { title: p.title, dot: seen ? '#6aa56a' : '#e0a526', seenLabel: seen ? 'bekeken' : '', open: () => { if (this.api) this.api.openPoint(p.id); } }; }),
+      hasInfo: !!inf, infoTitle: inf ? inf.title : '', infoCat: inf ? inf.cat : '', infoText: inf ? inf.text : '', infoFact: inf && inf.fact ? inf.fact : '', hasFact: !!(inf && inf.fact),
+      infoNote: inf && inf.note ? inf.note : '', hasNote: !!(inf && inf.note), infoStatus: inf && inf.status ? inf.status : '', hasStatus: !!(inf && inf.status),
+      infoSrc: inf ? inf.src.map((t) => ({ t })) : [],
+      audShowPlay: as !== 'playing', audShowPause: as === 'playing',
+      audLabel: as === 'playing' ? 'Speelt af…' : as === 'paused' ? 'Gepauzeerd' : as === 'done' ? 'Klaar. Speel opnieuw af met de pijl.' : as === 'unavailable' ? 'Geen stem beschikbaar' : as === 'error' ? 'Afspelen mislukt' : 'Beluister de uitleg',
+      audPct: Math.round((as === 'idle' ? 0 : (s.audioProg || 0)) * 1000) / 10 + '%', audNote: s.audioNote || '', hasAudNote: !!s.audioNote,
+      hasPrompt: ((!!foc && s.focusId !== s.infoId) || (!foc && !!s.switchFocus)) && !s.menu, promptText: foc ? (s.touch ? 'Tik hier voor uitleg: ' : 'Uitleg: ') + foc.title : (s.switchFocus ? (s.touch ? 'Tik hier: ' : '') + (s.night ? 'Licht uit: terug naar overdag' : 'Licht aan: naar de nacht') : ''), promptKey: s.touch ? 'i' : 'E', promptBottom: s.touch ? '150px' : '84px',
+      stickStart: this.stickStart, stickMove: this.stickMove, stickEnd: this.stickEnd, lookStart: this.lookStart, lookMove: this.lookMove, lookEnd: this.lookEnd, lookCancel: this.lookCancel,
+      onOpenFocus: this.onOpenFocus, onClosePoint: this.onClosePoint, onAudioPlay: this.onAudioPlay, onAudioPause: this.onAudioPause, onAudioReplay: this.onAudioReplay
+    };
+  }
+}
+</script>
+</body>
+</html>
