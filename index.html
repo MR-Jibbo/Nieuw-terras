@@ -58,7 +58,7 @@ button:focus-visible{outline:3px solid #1d2a24;outline-offset:2px}
 <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:6px">
 <button onClick="{{onStart}}" style="min-height:52px;padding:0 28px;border:0;border-radius:999px;background:#e0a526;color:#1d2a24;font-size:17px;font-weight:700;display:inline-flex;align-items:center;gap:10px">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="#1d2a24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
-Start de rondleiding
+{{startLabel}}
 </button>
 <button onClick="{{onExploreFromStart}}" style="min-height:52px;padding:0 22px;border:2px solid #1d2a24;border-radius:999px;background:transparent;color:#1d2a24;font-size:16px;font-weight:700">Zelf het terrein verkennen</button>
 </div>
@@ -296,6 +296,7 @@ class Component extends DCLogic {
     const inf = s.infoId ? pts.find((p) => p.id === s.infoId) : null, foc = s.focusId ? pts.find((p) => p.id === s.focusId) : null, as = s.audioState || 'idle';
     return {
       canvasRef: this.canvasRef, rootRef: this.rootRef,
+      startLabel: s.voiceReady ? 'Start de rondleiding' : 'Stem laden…',
       isLoading: ph === 'loading', isError: ph === 'error', isIntro: ph === 'intro', isFilm: ph === 'film', isEnded: ph === 'ended', isExplore: ph === 'explore',
       errorText: s.error || '',
       totalMin: String(Math.round(total / 60 * 2) / 2).replace('.', ','),

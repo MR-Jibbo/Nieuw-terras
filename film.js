@@ -1761,7 +1761,7 @@ PF.create = function (opts) {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   let pr = Math.min(G.devicePixelRatio || 1, isTouch ? 1.5 : 2); renderer.setPixelRatio(pr);
 
-  const S = { phase: 'loading', paused: false, T: 0, chapter: 0, chapterName: '', subtitle: '', muted: false, cc: true, locked: false, menu: false, progress: 0, fps: 60, voice: 'timed', touch: isTouch, error: '', speaking: false, hint: '', focusId: null, infoId: null, audioState: 'idle', audioProg: 0, audioNote: '', seen: [], nPoints: (PF.POINTS || []).length };
+  const S = { phase: 'loading', voiceReady: false, paused: false, T: 0, chapter: 0, chapterName: '', subtitle: '', muted: false, cc: true, locked: false, menu: false, progress: 0, fps: 60, voice: 'timed', touch: isTouch, error: '', speaking: false, hint: '', focusId: null, infoId: null, audioState: 'idle', audioProg: 0, audioNote: '', seen: [], nPoints: (PF.POINTS || []).length };
   let ST, C, A = PF.createAudio(), tl, total = 0, Pts = null; A.musicUrls = [].concat(opts.musicUrl || []);
   const _fwv = new THREE.Vector3(); let wall = 0, T = 0, last = 0, raf = 0, disposed = false, frame = 0, lastEmit = 0, lastJson = '';
   let spoken = [], speechActive = false, speechBeat = -1, speechStarted = false, speechT0 = 0, utter = null, waitWall = 0;
@@ -1775,14 +1775,15 @@ PF.create = function (opts) {
   }
 
   /* ---------- voice-over (opgenomen audio, per beat afgespeeld) ---------- */
-  let vbytes = null, vbuf = null, vsrc = null, vstart = 0, vbeat = -1, venv = null, voiceFetch = null, starting = false;
+  let vbytes = null, vbuf = null, vsrc = null, vstart = 0, vbeat = -1, venv = null, voiceFetch = null, voiceProm = null, starting = false;
   const ENV_HZ = 50;
   const vurls = [].concat(opts.voiceUrl || []);
   const fetchBytes = u => fetch(u).then(r => { if (!r.ok) throw new Error('voice ' + r.status); return r.arrayBuffer(); });
   function loadVoiceBytes() { if (!vurls.length) return Promise.resolve(); return fetchBytes(vurls[0]).then(b => { vbytes = b; }).catch(() => { vbytes = null; }); }
-  const decode = b => new Promise((res, rej) => { const p = A.ctx.decodeAudioData(b.slice(0), res, rej); if (p && p.catch) p.catch(rej); });
-  async function prepareVoice() {
-    if (vbuf || !A.ok) return;
+  const decode = b => new Promise((res, rej) => { const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext; const c = A.ctx || new OC(1, 1, 48000); const p = c.decodeAudioData(b.slice(0), res, rej); if (p && p.catch) p.catch(rej); }); // decoderen kan al op het introscherm (geen audiocontext/klik nodig)
+  function prepareVoice() { if (!voiceProm) voiceProm = prepareVoiceImpl(); return voiceProm; }
+  async function prepareVoiceImpl() {
+    if (vbuf) return;
     try { if (voiceFetch) await voiceFetch; } catch (e) {}
     for (let k = 0; k < vurls.length && !vbuf; k++) { try { const b = k === 0 ? vbytes : await fetchBytes(vurls[k]); if (b) vbuf = await decode(b); } catch (e) { vbuf = null; } }
     if (!vbuf) { S.voice = 'timed'; return; }
@@ -1845,6 +1846,7 @@ PF.create = function (opts) {
   const api = {};
   api.init = async function () {
     voiceFetch = loadVoiceBytes();
+    prepareVoice().catch(() => {}).then(() => { S.voiceReady = true; emit(true); });  // stem alvast decoderen terwijl het introscherm staat
     try {
       try { await Promise.race([Promise.all([document.fonts.load('700 40px "Bricolage Grotesque"'), document.fonts.load('500 24px "DM Sans"')]), new Promise(r => setTimeout(r, 1800))]); } catch (e) {}
       ST = PF.createStage(renderer); C = PF.createChoreo(ST); C.init(); Pts = PF.createPoints(ST.world.site); tl = ST.tl; total = tl.total; S.total = total;
