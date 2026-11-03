@@ -26,6 +26,11 @@ button:focus-visible{outline:3px solid #1d2a24;outline-offset:2px}
 .pf-intro h1{margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:56px;line-height:1.02;letter-spacing:-.02em}
 @media (max-width:640px){.pf-intro{padding:20px 20px 20px 20px;gap:14px}.pf-intro h1{font-size:40px}}
 @media (max-height:500px){.pf-intro{padding:12px 20px 12px 24px;gap:8px}.pf-intro h1{font-size:30px}.pf-intro p{font-size:14px!important;line-height:1.4!important}.pf-intro button{min-height:44px!important}}
+.pf-bar{height:100%;border-radius:99px;min-width:18px;background:repeating-linear-gradient(-45deg,#2f6b3f 0 10px,#3f8a52 10px 20px);background-size:28px 28px;animation:pfstripe .8s linear infinite;transition:width .25s ease-out;box-shadow:0 0 0 1px rgba(47,107,63,.25)}
+.pf-sun{position:absolute;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffd76a,#e0a526);box-shadow:0 0 0 4px rgba(224,165,38,.25),0 0 14px rgba(224,165,38,.7);transition:left .25s ease-out;animation:pfbob 1.4s ease-in-out infinite}
+@keyframes pfstripe{to{background-position:28px 0}}
+@keyframes pfbob{50%{transform:translateY(-3px) scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.pf-bar,.pf-sun{animation:none}}
 </style>
 </helmet>
 <div ref="{{rootRef}}" tabindex="0" style="position:relative;width:100%;height:100vh;min-height:360px;overflow:hidden;background:#eae5d8;font-family:'DM Sans',system-ui,sans-serif;color:#1d2a24;outline:none;user-select:none;-webkit-user-select:none;touch-action:none">
@@ -56,12 +61,21 @@ button:focus-visible{outline:3px solid #1d2a24;outline-offset:2px}
 <h1>Het nieuwe prachtige terras</h1>
 <p style="margin:0;font-size:18px;line-height:1.5;color:#33413a">Een animatiefilm en verkenmodus over het concept voor het terras boven de fietsenstalling (14 × 90 meter): een modulaire zon-groene pergola met groenmodules, zelfwatergevende plantenbakken en habitatbakken.</p>
 <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:6px">
-<button onClick="{{onStart}}" style="min-height:52px;padding:0 28px;border:0;border-radius:999px;background:#e0a526;color:#1d2a24;font-size:17px;font-weight:700;display:inline-flex;align-items:center;gap:10px">
+<button onClick="{{onStart}}" style="min-height:52px;padding:0 28px;border:0;border-radius:999px;background:#e0a526;opacity:{{startOp}};color:#1d2a24;font-size:17px;font-weight:700;display:inline-flex;align-items:center;gap:10px">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="#1d2a24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
 {{startLabel}}
 </button>
 <button onClick="{{onExploreFromStart}}" style="min-height:52px;padding:0 22px;border:2px solid #1d2a24;border-radius:999px;background:transparent;color:#1d2a24;font-size:16px;font-weight:700">Zelf het terrein verkennen</button>
 </div>
+<sc-if value="{{showLoadBar}}" hint-placeholder-val="{{ true }}">
+<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{loadNow}}" aria-label="Stem laden" style="display:flex;flex-direction:column;gap:10px;max-width:420px;margin:2px 0 4px">
+<div style="position:relative;height:18px;border-radius:99px;background:rgba(47,107,63,.16)">
+<div class="pf-bar" style="width:{{loadW}}"></div>
+<div class="pf-sun" style="left:{{sunLeft}}"></div>
+</div>
+<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:1.4;color:#33413a"><span>{{loadMsg}}</span><b style="flex:none">{{loadPctText}}</b></div>
+</div>
+</sc-if>
 <div style="font-size:14px;line-height:1.5;color:#4a5750">Ongeveer {{totalMin}} minuten · Nederlands, met ondertiteling · zet je geluid aan</div>
 <div style="font-size:12px;line-height:1.5;color:#6a766f">Muziek: &ldquo;Minecraft&rdquo; &mdash; C418 (Minecraft &ndash; Volume Alpha)</div>
 <div style="font-size:12px;line-height:1.5;color:#6a766f">Stem: voorlopige synthetische voice-over (Piper, nl_NL-ronnie), nog te vervangen door een menselijke opname.</div>
@@ -294,9 +308,12 @@ class Component extends DCLogic {
     const touch = !!s.touch;
     const pts = window.PF && window.PF.POINTS ? window.PF.POINTS : [];
     const inf = s.infoId ? pts.find((p) => p.id === s.infoId) : null, foc = s.focusId ? pts.find((p) => p.id === s.focusId) : null, as = s.audioState || 'idle';
+    const LOADMSG = ['De zon wordt opgewarmd…', 'Klimplanten worden uitgerold…', 'Zonnepanelen worden gepoetst…', 'Plantenbakken krijgen water…', 'De student zoekt zijn fiets…', 'Bijen worden uitgenodigd…', 'Het gras wordt uitgerold…', 'De voice-over schraapt zijn keel…'];
+    const lp = Math.max(0, Math.min(100, s.loadPct || 0)), lmsg = lp >= 94 ? 'Bijna klaar…' : LOADMSG[Math.floor(Date.now() / 2400) % LOADMSG.length];
     return {
+      startLabel: s.voiceReady ? 'Start de rondleiding' : 'Even geduld…', startOp: s.voiceReady ? '1' : '.55',
+      showLoadBar: !s.voiceReady, loadW: lp + '%', sunLeft: Math.max(3, Math.min(97, lp)) + '%', loadNow: String(Math.round(lp)), loadPctText: Math.round(lp) + '%', loadMsg: lmsg,
       canvasRef: this.canvasRef, rootRef: this.rootRef,
-      startLabel: s.voiceReady ? 'Start de rondleiding' : 'Stem laden…',
       isLoading: ph === 'loading', isError: ph === 'error', isIntro: ph === 'intro', isFilm: ph === 'film', isEnded: ph === 'ended', isExplore: ph === 'explore',
       errorText: s.error || '',
       totalMin: String(Math.round(total / 60 * 2) / 2).replace('.', ','),

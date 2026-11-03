@@ -1761,7 +1761,7 @@ PF.create = function (opts) {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   let pr = Math.min(G.devicePixelRatio || 1, isTouch ? 1.5 : 2); renderer.setPixelRatio(pr);
 
-  const S = { phase: 'loading', voiceReady: false, paused: false, T: 0, chapter: 0, chapterName: '', subtitle: '', muted: false, cc: true, locked: false, menu: false, progress: 0, fps: 60, voice: 'timed', touch: isTouch, error: '', speaking: false, hint: '', focusId: null, infoId: null, audioState: 'idle', audioProg: 0, audioNote: '', seen: [], nPoints: (PF.POINTS || []).length };
+  const S = { phase: 'loading', voiceReady: false, loadPct: 0, paused: false, T: 0, chapter: 0, chapterName: '', subtitle: '', muted: false, cc: true, locked: false, menu: false, progress: 0, fps: 60, voice: 'timed', touch: isTouch, error: '', speaking: false, hint: '', focusId: null, infoId: null, audioState: 'idle', audioProg: 0, audioNote: '', seen: [], nPoints: (PF.POINTS || []).length };
   let ST, C, A = PF.createAudio(), tl, total = 0, Pts = null; A.musicUrls = [].concat(opts.musicUrl || []);
   const _fwv = new THREE.Vector3(); let wall = 0, T = 0, last = 0, raf = 0, disposed = false, frame = 0, lastEmit = 0, lastJson = '';
   let spoken = [], speechActive = false, speechBeat = -1, speechStarted = false, speechT0 = 0, utter = null, waitWall = 0;
@@ -1770,7 +1770,7 @@ PF.create = function (opts) {
 
   function emit(force) {
     const now = performance.now(); if (!force && now - lastEmit < 90) return;
-    const j = JSON.stringify([S.phase, S.paused, Math.round(S.T * 4), S.chapter, S.subtitle, S.muted, S.cc, S.locked, S.menu, S.voice, Math.round(S.fps / 5), S.error, S.hint, S.focusId, S.infoId, S.audioState, Math.round(S.audioProg * 40), S.audioNote, S.seen.length]);
+    const j = JSON.stringify([S.phase, S.paused, Math.round(S.T * 4), S.chapter, S.subtitle, S.muted, S.cc, S.locked, S.menu, S.voice, Math.round(S.fps / 5), S.error, S.hint, S.focusId, S.infoId, S.audioState, Math.round(S.audioProg * 40), S.audioNote, S.seen.length, Math.round(S.loadPct * 2), S.voiceReady]);
     if (!force && j === lastJson) return; lastJson = j; lastEmit = now; onState(Object.assign({}, S));
   }
 
@@ -1779,14 +1779,27 @@ PF.create = function (opts) {
   const ENV_HZ = 50;
   const vurls = [].concat(opts.voiceUrl || []);
   const fetchBytes = u => fetch(u).then(r => { if (!r.ok) throw new Error('voice ' + r.status); return r.arrayBuffer(); });
-  function loadVoiceBytes() { if (!vurls.length) return Promise.resolve(); return fetchBytes(vurls[0]).then(b => { vbytes = b; }).catch(() => { vbytes = null; }); }
+  const setPct = p => { if (p > S.loadPct) { S.loadPct = Math.min(100, p); emit(false); } };
+  function loadVoiceBytes() {
+    if (!vurls.length) return Promise.resolve();
+    return fetch(vurls[0]).then(async r => {
+      if (!r.ok) throw new Error('voice ' + r.status);
+      const len = +r.headers.get('content-length') || 0;
+      if (!r.body || !r.body.getReader) { const b = await r.arrayBuffer(); setPct(55); return b; }
+      const rd = r.body.getReader(), chunks = []; let got = 0;
+      for (;;) { const x = await rd.read(); if (x.done) break; chunks.push(x.value); got += x.value.length; setPct(len ? 55 * Math.min(1, got / len) : 50 * (1 - Math.exp(-got / 4e6))); }
+      const out = new Uint8Array(got); let o = 0; chunks.forEach(c => { out.set(c, o); o += c.length; }); setPct(55); return out.buffer;
+    }).then(b => { vbytes = b; }).catch(() => { vbytes = null; });
+  }
   const decode = b => new Promise((res, rej) => { const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext; const c = A.ctx || new OC(1, 1, 48000); const p = c.decodeAudioData(b.slice(0), res, rej); if (p && p.catch) p.catch(rej); }); // decoderen kan al op het introscherm (geen audiocontext/klik nodig)
   function prepareVoice() { if (!voiceProm) voiceProm = prepareVoiceImpl(); return voiceProm; }
   async function prepareVoiceImpl() {
     if (vbuf) return;
     try { if (voiceFetch) await voiceFetch; } catch (e) {}
+    const tD = performance.now(), tick = setInterval(() => setPct(55 + 37 * (1 - Math.exp(-(performance.now() - tD) / 5000))), 120);  // decoderen: geschatte voortgang
     for (let k = 0; k < vurls.length && !vbuf; k++) { try { const b = k === 0 ? vbytes : await fetchBytes(vurls[k]); if (b) vbuf = await decode(b); } catch (e) { vbuf = null; } }
-    if (!vbuf) { S.voice = 'timed'; return; }
+    clearInterval(tick); setPct(94);
+    if (!vbuf) { S.voice = 'timed'; setPct(100); return; }
     try {
       const d = vbuf.getChannelData(0), W = Math.max(1, Math.round(vbuf.sampleRate / ENV_HZ)), n = Math.floor(d.length / W), env = new Float32Array(n);
       for (let k = 0; k < n; k++) { let sum = 0; for (let j = k * W; j < (k + 1) * W; j++) sum += d[j] * d[j]; env[k] = Math.sqrt(sum / W); }
@@ -1794,6 +1807,7 @@ PF.create = function (opts) {
       for (let k = 0; k < n; k++) env[k] = Math.min(1, Math.max(0, (env[k] / ref - .06) / .94));
       venv = env; S.voice = 'nl';
     } catch (e) { vbuf = null; S.voice = 'timed'; }
+    setPct(100);
   }
   function stopVoice() { if (vsrc) { try { vsrc.onended = null; vsrc.stop(); } catch (e) {} try { vsrc.disconnect(); } catch (e) {} } vsrc = null; vbeat = -1; }
   function cancelSpeech() { stopVoice(); }
@@ -1846,7 +1860,7 @@ PF.create = function (opts) {
   const api = {};
   api.init = async function () {
     voiceFetch = loadVoiceBytes();
-    prepareVoice().catch(() => {}).then(() => { S.voiceReady = true; emit(true); });  // stem alvast decoderen terwijl het introscherm staat
+    prepareVoice().catch(() => {}).then(() => { S.loadPct = 100; S.voiceReady = true; emit(true); });  // stem alvast decoderen terwijl het introscherm staat
     try {
       try { await Promise.race([Promise.all([document.fonts.load('700 40px "Bricolage Grotesque"'), document.fonts.load('500 24px "DM Sans"')]), new Promise(r => setTimeout(r, 1800))]); } catch (e) {}
       ST = PF.createStage(renderer); C = PF.createChoreo(ST); C.init(); Pts = PF.createPoints(ST.world.site); tl = ST.tl; total = tl.total; S.total = total;
