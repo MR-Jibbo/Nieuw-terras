@@ -41,7 +41,7 @@ en open daarna http://localhost:8080.
 Voorbeeld conversie: `ffmpeg -i vo.mp3 -c:a aac -b:a 128k vo_aac.mp4` en `ffmpeg -i vo.mp3 -c:a libopus -b:a 64k vo_opus.webm`.
 
 ## Geluid
-Naast de voice-over klinken alleen natuurgeluiden (wind, regen, vogels, procedureel) en het muziekje (Muziekje_voor_achtergrond.mp3) als achtergrondmuziek. Tijdens spraak zakt de muziek automatisch naar ongeveer de helft. Muziek: "Time" — Toshiki Soejima & Nahokimama (aangeleverd door de opdrachtgever; licentievoorwaarden niet gecontroleerd). De bronvermelding staat ook op het startscherm.
+Naast de voice-over klinken alleen natuurgeluiden (wind, regen, vogels, procedureel) en de muziek (Minecraft, C418 — Minecraft Volume Alpha; bestand `Minecraft_Volume_Alpha_-_8_-_Minecraft.mp3`, dynamisch gelijkgetrokken) als achtergrondmuziek. Tijdens spraak zakt de muziek automatisch naar ongeveer de helft. Muziek: "Time" — Toshiki Soejima & Nahokimama (aangeleverd door de opdrachtgever; licentievoorwaarden niet gecontroleerd). De bronvermelding staat ook op het startscherm.
 
 ## Besturing
 - **Film**: spatie = pauze, knoppen onderin (herstart, spoelen, ondertiteling, geluid, volledig scherm).
