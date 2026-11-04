@@ -13,7 +13,7 @@ index.html        pagina + besturing (Nederlandse interface)
 support.js        runtime van de pagina
 three.min.js      Three.js r147
 film.js           wereld, regie en speler (gebundeld)
-audio/            vo_aac.mp4 (AAC) en vo_opus.webm (Opus) — voice-over van de film (voorlopige synthetische stem, zie onder)
+audio/            vo_aac.mp4 (AAC) en vo_opus.webm (Opus) — voice-over van de film (ElevenLabs, stem "Jesse – Elearning Casual Friendly Male")
                   music_aac.mp4 en music_opus.webm — achtergrondmuziek, staat zacht onder de stem
 pa/               <punt>.mp4 en <punt>.webm — één bestand per informatiepunt (22 punten)
 .nojekyll         voor GitHub Pages
@@ -37,11 +37,13 @@ en open daarna http://localhost:8080.
 - `audio/vo_aac.mp4` + `audio/vo_opus.webm`: de doorlopende voice-over.
 - `pa/<id>.mp4` + `pa/<id>.webm`: de uitleg per informatiepunt.
 
-**Let op:** de meegeleverde voice-over is een *voorlopige synthetische stem* (Piper `nl_NL-ronnie-medium`, CC0-dataset, uitspraak via espeak-ng), gemaakt omdat de ElevenLabs-credits op waren. Hij is technisch schoon maar klinkt niet als een menselijke opname. In `film.js` staat per beat de echte duur (`v`); bij een nieuwe opname moeten die tijden opnieuw worden bepaald.
+**Stemmen:** de voice-over van de film is een ElevenLabs-opname (stem "Jesse – Elearning Casual Friendly Male"), geleverd door de opdrachtgever. De 22 uitlegfragmenten bij de informatiepunten (`pa/`) zijn nog een *voorlopige synthetische stem* (Piper `nl_NL-ronnie-medium`, CC0-dataset) en klinken dus anders dan de filmstem; ze moeten nog worden vervangen.
+
+**Synchronisatie:** in `film.js` staat per beat (`BEATS`) het begin/eind in het voice-overbestand (`v`) en de zintijden (`s`). Zinstarts en -einden zijn automatisch bepaald door de bekende tekst op het geluid uit te lijnen (gecontroleerd met een tweede, onafhankelijke spraakherkenning); woordtijden binnen een zin zijn geschat, dus labels kunnen ca. 0,2–0,3 s van het gesproken woord afwijken. Camera, studentenbeweging en labels volgen dezelfde tijdlijn. Bij een nieuwe opname moeten de beat-tijden opnieuw worden bepaald.
 Voorbeeld conversie: `ffmpeg -i vo.mp3 -c:a aac -b:a 128k vo_aac.mp4` en `ffmpeg -i vo.mp3 -c:a libopus -b:a 64k vo_opus.webm`.
 
 ## Geluid
-Naast de voice-over klinken alleen natuurgeluiden (wind, regen, vogels, procedureel) en de muziek (Minecraft, C418 — Minecraft Volume Alpha; bestand `Minecraft_Volume_Alpha_-_8_-_Minecraft.mp3`, dynamisch gelijkgetrokken) als achtergrondmuziek. Tijdens spraak zakt de muziek automatisch naar ongeveer de helft. Muziek: "Time" — Toshiki Soejima & Nahokimama (aangeleverd door de opdrachtgever; licentievoorwaarden niet gecontroleerd). De bronvermelding staat ook op het startscherm.
+Naast de voice-over klinken alleen natuurgeluiden (wind, regen, vogels, procedureel) en de muziek (Minecraft, C418 — Minecraft Volume Alpha; bestand `Minecraft_Volume_Alpha_-_8_-_Minecraft.mp3`, dynamisch gelijkgetrokken) als achtergrondmuziek. Tijdens spraak zakt de muziek automatisch naar ongeveer de helft. Muziek: "Minecraft" — C418 (aangeleverd door de opdrachtgever; licentievoorwaarden niet gecontroleerd). De bronvermelding staat ook op het startscherm.
 
 ## Besturing
 - **Film**: spatie = pauze, knoppen onderin (herstart, spoelen, ondertiteling, geluid, volledig scherm).
